@@ -1,0 +1,16 @@
+{
+  "name": "Nomination Form Filler",
+  "short_name": "Form Filler",
+  "description": "Fills the nominee / trustee form from WhatsApp text, IC photos or Excel.",
+  "start_url": "./Nomination%20Form%20Filler.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f5f6f8",
+  "theme_color": "#b4121b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

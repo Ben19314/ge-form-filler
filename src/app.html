@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nomination Form Filler</title>
+<!-- Phone app install: name, icon and colours (used when opened from the website) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#b4121b">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Form Filler">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{
   --bg:#f5f6f8; --card:#fff; --ink:#1b1f24; --muted:#5f6b7a; --line:#dde2e8; --accent:#b4121b; --accent-ink:#fff;
@@ -108,6 +117,10 @@ th{color:var(--muted);font-weight:600}
 <script>/*CORE*/</script>
 <script>
 const TEMPLATE_B64 = "/*TEMPLATE*/";
+// Offline support for the installed phone app (only on the website, not when opened as a file).
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 <!-- Photo reader (Tesseract.js 5.1.1, Apache-2.0). Kept as text and only started when a photo is chosen. -->
 <script type="text/plain" id="ocr-main">/*OCRMAIN*/</script>

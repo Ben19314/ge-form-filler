@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nomination Form Filler</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --ink:#1b1f24; --muted:#5f6b7a; --line:#dde2e8; --accent:#b4121b; --accent-ink:#fff;
+  --ok:#1f7a3a; --ok-bg:#e7f5ec; --err:#b42318; --err-bg:#fdecea; --warn:#8a5a00; --warn-bg:#fff4dc; --info:#1f4f8a; --info-bg:#e8f0fb;
+  --field:#fff; --focus:#2b6cb0;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14171b; --card:#1d2126; --ink:#e8ebef; --muted:#9aa5b1; --line:#323840; --accent:#e0464e; --accent-ink:#fff;
+  --ok:#6fd38f; --ok-bg:#16301f; --err:#ff8a80; --err-bg:#3a1a1a; --warn:#f5c26b; --warn-bg:#352a12; --info:#8ab8f5; --info-bg:#172638;
+  --field:#15181c; --focus:#7aa7e6; } }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:16px;margin:0}
+header .sub{color:var(--muted);font-size:12px}
+header .spacer{flex:1}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.small{padding:4px 9px;font-size:12px}
+button.link{border:none;background:none;color:var(--focus);padding:0;text-decoration:underline}
+nav{display:flex;gap:4px;padding:8px 20px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:none;border-radius:6px;white-space:nowrap}
+nav button.on{background:var(--ink);color:var(--card)}
+nav .badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;font-size:11px;background:var(--err-bg);color:var(--err)}
+nav .badge.zero{background:var(--ok-bg);color:var(--ok)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;padding:20px;max-width:1280px;margin:0 auto}
+@media (max-width:900px){.layout{grid-template-columns:1fr;padding:16px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 4px}
+.card h3{font-size:13px;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card .hint{color:var(--muted);font-size:12px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px 14px}
+.grid .wide{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+label.f span.t{font-weight:600;color:var(--ink)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:-1px}
+textarea{resize:vertical;min-height:62px}
+.upper{text-transform:uppercase}
+.derived{font-size:11px;color:var(--ok)}
+.person{border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0;position:relative}
+.person .head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.person .head b{font-size:14px}
+.person .head .spacer{flex:1}
+.paste{background:var(--info-bg);border-radius:8px;padding:10px;margin-bottom:12px}
+.paste textarea{min-height:54px;font-size:13px}
+.paste .row{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.paste .msg{font-size:12px;color:var(--info)}
+.paste.bulk{border:1px solid var(--info);margin:4px 0 16px}
+.paste.bulk .hint{margin:2px 0 6px}
+.radio{display:flex;gap:6px;flex-wrap:wrap}
+.radio label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:7px;padding:6px 10px;cursor:pointer;color:var(--ink);font-size:13px}
+.radio input{width:auto;margin:0}
+.radio label.on{border-color:var(--focus);background:var(--info-bg)}
+aside .card{position:sticky;top:120px;max-height:calc(100vh - 140px);overflow:auto}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}
+.sum div{border-radius:8px;padding:8px;text-align:center;font-size:11px}
+.sum b{display:block;font-size:20px}
+.s-err{background:var(--err-bg);color:var(--err)} .s-miss{background:var(--warn-bg);color:var(--warn)} .s-ok{background:var(--ok-bg);color:var(--ok)}
+ul.issues{list-style:none;margin:0;padding:0}
+ul.issues li{font-size:12.5px;padding:7px 9px;border-radius:7px;margin-bottom:5px;cursor:pointer;border-left:3px solid transparent}
+li.error{background:var(--err-bg);border-color:var(--err)!important}
+li.missing{background:var(--warn-bg);border-color:var(--warn)!important}
+li.warn{background:var(--warn-bg);border-color:#d08a00!important}
+li.info{background:var(--info-bg);border-color:var(--info)!important}
+.tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-right:4px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.empty{color:var(--muted);text-align:center;padding:24px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw}
+.toast.show{opacity:1}
+.result{border-radius:10px;padding:14px;margin-top:12px}
+.help p,.help li{max-width:70ch}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Nomination Form Filler</h1>
+    <div class="sub">Great Eastern · Appointment / Change of Nominee(s) / Trustee(s) · <span id="formVer"></span></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="sub" id="caseLabel"></span>
+  <button id="btnUpload" title="Excel (.xlsx / .xls) or CSV">Upload customers</button>
+  <input type="file" id="uploadFile" accept=".xlsx,.xls,.csv" hidden>
+  <button id="btnNew">New customer</button>
+  <button id="btnSave">Save</button>
+  <button class="primary" id="btnGen">Generate PDF</button>
+</header>
+<nav id="tabs"></nav>
+<div class="layout">
+  <main id="main"></main>
+  <aside><div class="card" id="check"></div></aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>/*PDFLIB*/</script>
+<script>/*XLSX*/</script>
+<script>/*CORE*/</script>
+<script>
+const TEMPLATE_B64 = "/*TEMPLATE*/";
+</script>
+<!-- Photo reader (Tesseract.js 5.1.1, Apache-2.0). Kept as text and only started when a photo is chosen. -->
+<script type="text/plain" id="ocr-main">/*OCRMAIN*/</script>
+<script type="text/plain" id="ocr-worker">/*OCRWORKER*/</script>
+<script type="text/plain" id="ocr-lang">/*OCRLANG*/</script>
+<script>
+(function(){
+'use strict';
+const C = window.FormCore;
+const LS = { cases:'gefill.cases', draft:'gefill.draft', log:'gefill.log', settings:'gefill.settings', template:'gefill.template' };
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ toast('Could not save in this browser: ' + e.message); return false; } }
+};
+let settings = Object.assign({ agentName:'', agentIac:'', signDateMode:'blank' }, store.get(LS.settings, {}));
+let state = store.get(LS.draft, null) || freshCase();
+let tab = 'proposer';
+const TABS = [
+  ['proposer','1. Policy & proposer'], ['nominees','2. Nominees'], ['trustees','3. Trustees'], ['witness','4. Witness & consent'],
+  ['saved','Saved customers'], ['log','Run log'], ['settings','Settings'], ['help','How to use']
+];
+
+function freshCase(){
+  const c = C.newCase();
+  c.witness.name = settings.agentName; c.witness.iac = settings.agentIac;
+  return c;
+}
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), 3200); }
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function getPath(path){ return path.split('.').reduce((o,k)=> o == null ? undefined : o[k], state); }
+function setPath(path, v){ const ks = path.split('.'); let o = state; for (let i=0;i<ks.length-1;i++) o = o[ks[i]]; o[ks[ks.length-1]] = v; }
+
+// ---------- field builders ----------
+function input(path, label, o){
+  o = o || {};
+  const v = getPath(path) ?? '';
+  const attrs = `data-path="${path}" ${o.max?`maxlength="${o.max}"`:''} ${o.ph?`placeholder="${esc(o.ph)}"`:''}`;
+  let ctl;
+  if (o.type === 'textarea') ctl = `<textarea class="${o.upper?'upper':''}" ${attrs}>${esc(v)}</textarea>`;
+  else ctl = `<input type="${o.type||'text'}" class="${o.upper?'upper':''}" value="${esc(v)}" ${attrs} ${o.inputmode?`inputmode="${o.inputmode}"`:''}>`;
+  return `<label class="f ${o.wide?'wide':''}"><span class="t">${label}</span>${ctl}${o.hint?`<span>${o.hint}</span>`:''}</label>`;
+}
+function select(path, label, options, o){
+  o = o || {};
+  const v = getPath(path) ?? '';
+  return `<label class="f ${o.wide?'wide':''}"><span class="t">${label}</span><select data-path="${path}" data-rerender="1">
+    <option value="">— choose —</option>${options.map(([val,txt])=>`<option value="${val}" ${v===val?'selected':''}>${txt}</option>`).join('')}</select>${o.hint?`<span>${o.hint}</span>`:''}</label>`;
+}
+function radios(path, label, options){
+  const v = getPath(path) ?? '';
+  return `<div class="f"><label class="f"><span class="t">${label}</span></label><div class="radio">${options.map(([val,txt])=>
+    `<label class="${v===val?'on':''}"><input type="radio" name="${path}" value="${val}" data-path="${path}" data-rerender="1" ${v===val?'checked':''}>${txt}</label>`).join('')}</div></div>`;
+}
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+// Everything searchable for a saved customer: names, IC numbers (with or without dashes), policy/proposal no., phone, ref.
+function searchText(c){
+  const people = [{ name:c.proposer.name, idNo:c.proposer.nric }].concat(c.nominees, c.trustees, (c.consent && c.consent.persons) || []);
+  const parts = [c.policy.policyNo, c.policy.proposalNo, c.importedFrom, c.notes];
+  people.forEach(p => { if (!p) return; parts.push(p.name, C.normId(p.idNo), p.telNo, p.town, p.postcode); });
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+const REL_OPTS = C.RELATIONSHIPS.map(r=>[r, cap(r)]);
+
+function derivedNote(p){
+  const ic = C.icInfo(p.idNo);
+  if (!ic) return '';
+  if (!ic.valid) return `<span class="derived" style="color:var(--err)">IC date is not valid</span>`;
+  return `<span class="derived">From IC: born ${C.ddmmyy(ic.dob)}, ${ic.gender}</span>`;
+}
+
+function personFields(base, p, kind){
+  const isPass = /[A-Z]/i.test(p.idNo || '');
+  let h = `<div class="grid">`;
+  h += input(base+'.name', 'Full name as per NRIC/passport', { upper:true, wide:true, hint: kind==='witness' ? 'Max 2 lines × 28 characters' : 'Max 3 lines × 28 characters (split automatically)' });
+  h += `<label class="f"><span class="t">NRIC / passport no.</span><input class="upper" data-path="${base}.idNo" data-rerender-blur="1" value="${esc(p.idNo)}" placeholder="e.g. 870322-14-5678">${derivedNote(p)}</label>`;
+  if (isPass) h += input(base+'.passportExpiry', 'Passport expiry date', { type:'date' });
+  h += input(base+'.dob', 'Date of birth', { type:'date', hint: C.icInfo(p.idNo)?.valid ? 'Leave blank to use the IC date' : '' });
+  if (kind !== 'witness') {
+    h += select(base+'.gender', 'Gender', [['male','Male'],['female','Female']], { hint: C.icInfo(p.idNo)?.valid ? 'Blank = taken from IC' : '' });
+    h += select(base+'.nationality', 'Nationality', [['malaysian','Malaysian'],['other','Others']]);
+    if (p.nationality === 'other') h += input(base+'.nationalityOther', 'Nationality (state)', { upper:true, max:21 });
+  }
+  if (kind === 'nominee') {
+    h += select(base+'.relationship', 'Relationship to proposer', REL_OPTS);
+    if (p.relationship === 'others') h += input(base+'.relationshipOther', 'Relationship (state)', { upper:true });
+    h += input(base+'.share', '% of share', { type:'number', inputmode:'decimal', ph:'e.g. 50' });
+  }
+  if (kind === 'trustee') {
+    h += select(base+'.cob', 'Country of birth', [['malaysian','Malaysia'],['other','Others']]);
+    if (p.cob === 'other') h += input(base+'.cobOther', 'Country of birth (state)', { upper:true, max:21 });
+    h += input(base+'.telNo', 'Tel no. (with country code)', { ph:'60123456789', inputmode:'tel', hint:'Digits only, e.g. 60123456789' });
+    h += input(base+'.telCountry', 'Country of tel no.', { upper:true, max:8 });
+    h += select(base+'.telType', 'Tel type', [['house','House'],['mobile','Handphone'],['office','Office']]);
+  }
+  h += input(base+'.street', 'Mailing address (street)', { type:'textarea', upper:true, wide:true, hint:'Without postcode/town. Fits 3 lines × 32 characters; long words like JALAN/TAMAN are shortened only if needed.' });
+  h += input(base+'.postcode', 'Postcode', { max:5, inputmode:'numeric' });
+  h += input(base+'.town', 'Town', { upper:true, max:25 });
+  h += input(base+'.country', 'Country', { upper:true, max:10 });
+  h += `</div>`;
+  return h;
+}
+const pasteMem = {}, pasteMsg = {};
+const msgId = (base) => 'pm-' + base.replace(/\./g,'-');
+function photoButton(base, label){
+  return `<button class="small" data-act="photo" data-base="${base}" title="IC photo (front) or WhatsApp screenshot. Read on this PC, nothing is uploaded.">📷 ${label}</button>
+    <input type="file" accept="image/*" multiple hidden data-photo="${base}">`;
+}
+function pasteBox(base){
+  return `<div class="paste"><textarea data-paste="${base}" placeholder="Optional: paste the customer's WhatsApp message or notes here (name, IC, address, relationship, share %…), or read an IC photo">${esc(pasteMem[base] || '')}</textarea>
+    <div class="row"><button class="small" data-act="paste" data-base="${base}">Fill from pasted text</button>${photoButton(base, 'Read from photo')}<span class="msg" id="${msgId(base)}">${esc(pasteMsg[base] || '')}</span></div></div>`;
+}
+function bulkBox(){
+  return `<div class="paste bulk"><b>Fill all nominees at once</b>
+    <div class="hint">Paste one WhatsApp message with every nominee, or choose their IC photos / WhatsApp screenshots together (one photo per person is fine). Photos are read on this PC; nothing is uploaded.</div>
+    <textarea data-paste="bulk" placeholder="e.g.&#10;Nominee 1&#10;Name: Tan Mei Ling&#10;IC: 880101-14-5678&#10;Wife 60%&#10;Address: No 8, Jalan SS2/24, 47300 Petaling Jaya&#10;&#10;Nominee 2&#10;…">${esc(pasteMem.bulk || '')}</textarea>
+    <div class="row"><button class="small" data-act="bulkfill">Fill all nominees</button>${photoButton('bulk', 'Read IC photos / screenshots')}<span class="msg" id="pm-bulk">${esc(pasteMsg.bulk || '')}</span></div></div>`;
+}
+function copyAddrButtons(base, list, selfIdx, label){
+  return list.map((p,i)=> i===selfIdx || !p.street ? '' : `<button class="small" data-act="copyaddr" data-base="${base}" data-from="${label}.${i}">Same address as ${label === 'nominees' ? 'Nominee' : 'Trustee'} ${i+1}</button>`).join(' ');
+}
+
+// ---------- tabs ----------
+const views = {
+  proposer(){
+    const P = state.proposer;
+    return `<div class="card"><h2>Policy & proposer</h2><p class="hint">Page 1 of the form. Policy/Proposal no. are repeated on every page automatically.</p>
+      <div class="grid">
+        ${input('policy.policyNo','Policy no.',{upper:true,max:10})}
+        ${input('policy.proposalNo','Proposal no. (if no policy no. yet)',{upper:true,max:10})}
+        ${input('proposer.name','Proposer / policyowner full name',{upper:true,wide:true})}
+        <label class="f"><span class="t">NRIC (12 digits) / passport no.</span><input class="upper" data-path="proposer.nric" value="${esc(P.nric)}" placeholder="e.g. 850615-10-5523"></label>
+      </div>
+      <h3>Status</h3>
+      <div class="grid">
+        ${radios('proposer.muslim','Muslim?',[['no','No'],['yes','Yes']])}
+        ${radios('proposer.status','Marital status',C.STATUSES.map(s=>[s,cap(s)]))}
+        ${radios('proposer.children','Has children?',[['no','No'],['yes','Yes']])}
+        ${P.children==='yes' ? input('proposer.childrenCount','No. of children',{type:'number',inputmode:'numeric'}) : ''}
+      </div>
+      <h3>Notes (not printed)</h3>
+      ${input('notes','Your notes for this case',{type:'textarea',wide:true})}
+    </div>`;
+  },
+  nominees(){
+    const N = state.nominees;
+    let total = N.reduce((a,n)=> a + (parseFloat(n.share)||0), 0);
+    return `<div class="card"><h2>Nominees (Part 1)</h2><p class="hint">Up to 4. Shares must total 100%. Current total: <b style="color:${Math.abs(total-100)<0.001?'var(--ok)':'var(--err)'}">${+total.toFixed(2)}%</b>
+      ${N.length>1?` · <button class="link" data-act="split">Split equally</button>`:''}</p>
+      ${bulkBox()}
+      ${N.map((n,i)=>`<div class="person"><div class="head"><b>Nominee ${i+1}</b><span class="spacer"></span>${copyAddrButtons('nominees.'+i, N, i, 'nominees')}
+        ${N.length>1?`<button class="small" data-act="remove" data-list="nominees" data-i="${i}">Remove</button>`:''}</div>
+        ${pasteBox('nominees.'+i)}${personFields('nominees.'+i, n, 'nominee')}</div>`).join('')}
+      ${N.length<4?`<button data-act="add" data-list="nominees">+ Add nominee</button>`:''}
+    </div>`;
+  },
+  trustees(){
+    const T = state.trustees;
+    return `<div class="card"><h2>Trustees (Part 2)</h2><p class="hint">Leave this empty if no trustee change is needed. Up to 2 trustees. The proposer cannot be a trustee.</p>
+      ${radios('trusteeOption','What should Part 2 do?',[['','No trustee section'],['appoint','Appoint trustee(s)'],['additional','Add to existing trustee(s)'],['replace','Revoke existing & appoint'],['revoke','Revoke all existing only']])}
+      ${['appoint','additional','replace'].includes(state.trusteeOption) ? `
+        ${T.map((t,i)=>`<div class="person"><div class="head"><b>Trustee ${i+1}</b><span class="spacer"></span>
+          ${state.nominees.map((n,j)=> n.name ? `<button class="small" data-act="nomToTrustee" data-i="${i}" data-j="${j}">Copy from Nominee ${j+1}</button>` : '').join(' ')}
+          ${copyAddrButtons('trustees.'+i, T, i, 'trustees')}
+          <button class="small" data-act="remove" data-list="trustees" data-i="${i}">Remove</button></div>
+          ${pasteBox('trustees.'+i)}${personFields('trustees.'+i, t, 'trustee')}</div>`).join('')}
+        ${T.length<2?`<button data-act="add" data-list="trustees">+ Add trustee</button>`:''}` : ''}
+    </div>`;
+  },
+  witness(){
+    const W = state.witness;
+    return `<div class="card"><h2>Witness</h2><p class="hint">Used on pages 3, 4 and 5. If you (the agent) witness, only your name and IAC no. are needed. Set them once in Settings.</p>
+      ${radios('witness.type','Who is the witness?',[['agent','Agent (me)'],['other','Someone else']])}
+      <div style="height:10px"></div>
+      ${W.type==='agent' ? `<div class="grid">${input('witness.name','Witness name',{upper:true})}${input('witness.iac','IAC no.',{max:7,inputmode:'numeric'})}</div>`
+        : `<p class="hint">The witness must be over 18 and cannot be the proposer, a nominee or a trustee.</p>${personFields('witness', W, 'witness')}`}
+    </div>
+    <div class="card"><h2>Consent of existing nominees/trustees (Part 3)</h2>
+      <p class="hint">Needed when changing the nomination on an existing <b>trust policy</b>. The existing nominee(s)/trustee(s) sign to consent. Leave off otherwise.</p>
+      <label class="row" style="gap:6px"><input type="checkbox" style="width:auto" data-path="consent.needed" data-rerender="1" ${state.consent.needed?'checked':''}> Fill Part 3 consent section</label>
+      ${state.consent.needed ? `${state.consent.persons.map((p,i)=>`<div class="person"><div class="head"><b>Consent person ${i+1}</b><span class="spacer"></span><button class="small" data-act="remove" data-list="consent.persons" data-i="${i}">Remove</button></div>
+        <div class="grid">${input(`consent.persons.${i}.name`,'Name',{upper:true})}${input(`consent.persons.${i}.idNo`,'NRIC / passport no.',{upper:true})}</div></div>`).join('')}
+        ${state.consent.persons.length<4?`<button data-act="add" data-list="consent.persons">+ Add consent person</button>`:''}` : ''}
+    </div>
+    <div class="card"><h2>Signature dates</h2><p class="hint">Normally written by hand on the day of signing. Fill only if you are certain of the date.</p>
+      <div class="grid">${input('signDate','Signing date (optional)',{type:'date',hint:'Leave blank to write by hand'})}</div>
+    </div>`;
+  },
+  saved(){
+    const cases = store.get(LS.cases, {});
+    const list = Object.values(cases).sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||''));
+    return `${importReport()}<div class="card"><h2>Upload customer details</h2>
+      <p class="hint">Fill in the Excel template (one row per person: proposer, nominees, trustees), then upload it. Each customer is saved below, ready to open and generate.</p>
+      <div class="row"><button class="primary" data-act="upload">Upload Excel / CSV</button><button data-act="template">Download Excel template</button></div></div>
+      <div class="card"><h2>Saved customers</h2><p class="hint">Stored only in this browser on this computer. Use Export to back up or move to another PC.</p>
+      <div class="row" style="margin-bottom:12px"><input id="q" placeholder="Search name, IC, policy no., nominee, phone…" style="max-width:320px"><span class="hint" id="qCount"></span>
+        <span class="hint" style="margin-left:auto">${list.length} saved · storage ${storageUse()}</span>
+        <button data-act="export">Export all (backup file)</button><button data-act="import">Import backup</button><input type="file" id="importFile" accept=".json" hidden></div>
+      ${list.length ? `<table><thead><tr><th>Proposer</th><th>Policy / proposal</th><th>Nominees</th><th>Saved</th><th></th></tr></thead><tbody>
+        ${list.map(c=>`<tr data-search="${esc(searchText(c))}"><td>${esc(C.U(c.proposer.name)||'(no name)')}</td><td>${esc(c.policy.policyNo||c.policy.proposalNo||'')}</td>
+          <td>${c.nominees.map(n=>esc(C.U(n.name))).filter(Boolean).join(', ')}</td><td>${esc((c.savedAt||'').slice(0,16).replace('T',' '))}</td>
+          <td class="row"><button class="small" data-act="load" data-id="${c.id}">Open</button><button class="small" data-act="dup" data-id="${c.id}">Copy as new</button><button class="small" data-act="del" data-id="${c.id}">Delete</button></td></tr>`).join('')}
+        </tbody></table>` : `<div class="empty">No saved customers yet. Fill in a form and press Save.</div>`}
+    </div>`;
+  },
+  log(){
+    const log = store.get(LS.log, []);
+    return `<div class="card"><h2>Run log</h2><p class="hint">One line per PDF generated. No IC numbers are kept here.</p>
+      <div class="row" style="margin-bottom:12px"><button data-act="logcsv">Download as CSV</button><button data-act="logclear">Clear log</button></div>
+      ${log.length ? `<table><thead><tr><th>When</th><th>Proposer</th><th>Policy</th><th>Fields filled</th><th>Must fix</th><th>Missing</th><th>File</th></tr></thead><tbody>
+      ${log.slice().reverse().map(r=>`<tr><td>${esc(r.at.slice(0,16).replace('T',' '))}</td><td>${esc(r.customer)}</td><td>${esc(r.policy)}</td><td>${r.filled}</td>
+        <td style="color:${r.errors?'var(--err)':'var(--ok)'}">${r.errors}</td><td style="color:${r.missing?'var(--warn)':'var(--ok)'}">${r.missing}</td><td>${esc(r.file)}</td></tr>`).join('')}</tbody></table>`
+      : `<div class="empty">Nothing generated yet.</div>`}
+    </div>`;
+  },
+  settings(){
+    const custom = !!store.get(LS.template, null);
+    return `<div class="card"><h2>My agent details</h2><p class="hint">Filled in as the witness on every new form.</p>
+      <div class="grid">
+        <label class="f"><span class="t">Agent name</span><input class="upper" id="sName" value="${esc(settings.agentName)}"></label>
+        <label class="f"><span class="t">IAC no.</span><input id="sIac" maxlength="7" inputmode="numeric" value="${esc(settings.agentIac)}"></label>
+      </div><div style="margin-top:12px"><button class="primary" data-act="saveSettings">Save settings</button></div></div>
+    <div class="card"><h2>Form version</h2>
+      <p class="hint">Built in: <b>${C.FORM_CODE}</b>. If Great Eastern releases a new version, load it here. The app checks that the boxes it fills still exist before using it.</p>
+      <p>Currently using: <b>${custom ? 'a form you loaded (' + esc(store.get(LS.template).name) + ')' : 'built-in ' + C.FORM_CODE}</b></p>
+      <div class="row"><button data-act="loadForm">Load a new form PDF</button>${custom?'<button data-act="resetForm">Go back to built-in version</button>':''}<input type="file" id="formFile" accept=".pdf" hidden></div>
+    </div>`;
+  },
+  help(){
+    return `<div class="card help"><h2>How to use</h2>
+      <ol>
+        <li><b>Once:</b> open <i>Settings</i>, enter your agent name and IAC no.</li>
+        <li><b>New customer</b> → fill tab 1 (policy no., proposer, Muslim / status / children).</li>
+        <li><b>Nominees:</b> in <i>Fill all nominees at once</i>, paste the client's WhatsApp message (all nominees together) or press <i>Read IC photos / screenshots</i> and choose the IC photos or WhatsApp screenshots. Each person also has their own paste box and <i>Read from photo</i> button. Photos are read on this PC; nothing is uploaded. Photo reading can misread letters and digits, so compare each value with the IC. Date of birth and gender come from the IC automatically. Check every value.</li>
+        <li><b>Trustees</b> (if needed): pick the Part 2 option. Use <i>Copy from Nominee</i> when the spouse is also the trustee.</li>
+        <li>Watch the <b>checklist</b> on the right: red = must fix, amber = missing / please check, blue = notes from the form's rules.</li>
+        <li>Press <b>Generate PDF</b>. The filled form downloads. Open it, check it, print, and have it signed.</li>
+        <li>Press <b>Save</b> to keep the customer for next time (e.g. a later change of address).</li>
+      </ol>
+      <h3>What stays manual</h3>
+      <ul><li>All signatures, and signature dates unless you choose to pre-fill them.</li><li>Submitting the form to Great Eastern.</li><li>Final check of every printed value against the NRIC.</li></ul>
+      <h3>Privacy</h3>
+      <p>Everything runs inside this browser. Nothing is uploaded. Saved customers live in this browser's storage on this PC, so lock your PC and use <i>Export</i> for backups. Clearing browser data deletes them.</p>
+    </div>`;
+  }
+};
+
+// ---------- render ----------
+function render(){
+  document.getElementById('tabs').innerHTML = TABS.map(([k,t])=>{
+    const n = ['proposer','nominees','trustees','witness'].includes(k) ? issues.filter(i=>i.tab===k && (i.level==='error'||i.level==='missing')).length : null;
+    return `<button class="${tab===k?'on':''}" data-tab="${k}">${t}${n===null?'':`<span class="badge ${n?'':'zero'}">${n||'✓'}</span>`}</button>`;
+  }).join('');
+  document.getElementById('main').innerHTML = views[tab]();
+  document.getElementById('caseLabel').textContent = C.U(state.proposer.name) ? 'Customer: ' + C.U(state.proposer.name) : 'New customer (unsaved)';
+  const custom = store.get(LS.template, null);
+  document.getElementById('formVer').textContent = custom ? 'Form: ' + custom.name : 'Form ' + C.FORM_CODE;
+  renderCheck();
+}
+let issues = [];
+function renderCheck(){
+  issues = C.validate(state);
+  const cnt = l => issues.filter(i=>i.level===l).length;
+  const e = cnt('error'), m = cnt('missing'), w = cnt('warn');
+  const order = { error:0, missing:1, warn:2, info:3 }, tagTxt = { error:'Must fix', missing:'Missing', warn:'Check', info:'Note' };
+  document.getElementById('check').innerHTML = `<h2>Checklist</h2>
+    <div class="sum"><div class="s-err"><b>${e}</b>must fix</div><div class="s-miss"><b>${m}</b>missing</div><div class="${w?'s-miss':'s-ok'}"><b>${w}</b>to check</div></div>
+    ${!e && !m ? `<p style="color:var(--ok);font-weight:600;margin:0 0 10px">Ready to generate.</p>` : `<p class="hint">You can still generate a draft. Missing items stay blank on the PDF.</p>`}
+    <ul class="issues">${issues.slice().sort((a,b)=>order[a.level]-order[b.level]).map(i=>`<li class="${i.level}" data-tab="${i.tab}"><span class="tag">${tagTxt[i.level]}</span>${esc(i.text)}</li>`).join('')}</ul>`;
+  // tab badges
+  document.querySelectorAll('#tabs button[data-tab]').forEach(b=>{
+    const k = b.dataset.tab; const badge = b.querySelector('.badge'); if (!badge) return;
+    const n = issues.filter(i=>i.tab===k && (i.level==='error'||i.level==='missing')).length;
+    badge.textContent = n || '✓'; badge.className = 'badge ' + (n ? '' : 'zero');
+  });
+}
+const saveDraft = () => store.set(LS.draft, state);
+let vt; function revalidate(){ clearTimeout(vt); vt = setTimeout(()=>{ renderCheck(); saveDraft(); }, 250); }
+
+// ---------- events ----------
+document.addEventListener('input', e=>{
+  const el = e.target; if (!el.dataset.path) return;
+  let v = el.type === 'checkbox' ? el.checked : el.value;
+  setPath(el.dataset.path, v);
+  if (el.dataset.rerender) { render(); saveDraft(); } else revalidate();
+});
+document.addEventListener('change', e=>{
+  const el = e.target;
+  if (el.dataset.rerenderBlur) { render(); saveDraft(); }
+  if (el.id === 'importFile') importBackup(el.files[0]);
+  if (el.id === 'formFile') loadForm(el.files[0]);
+  if (el.id === 'uploadFile') uploadCustomers(el.files[0]);
+  if (el.dataset.photo) { const files = Array.from(el.files); el.value = ''; readPhotos(el.dataset.photo, files); }
+});
+document.addEventListener('input', e=>{ if (e.target.dataset.paste) pasteMem[e.target.dataset.paste] = e.target.value; });
+
+// ---------- fill from WhatsApp text / photos ----------
+function setMsg(base, text){ pasteMsg[base] = text; const m = document.getElementById(msgId(base)); if (m) m.textContent = text; }
+const PHOTO_NOTE = ' Read from a photo: compare every letter and digit with the IC.';
+function fillPerson(base, text, note){
+  const res = C.parsePasted(text); const target = getPath(base);
+  Object.keys(res.values).forEach(k=>{ if (k in target) target[k] = res.values[k]; });
+  render(); saveDraft();
+  setMsg(base, res.found.length ? 'Found: ' + res.found.join(', ') + '.' + (note || ' Please check each value.') : 'Nothing recognised. ' + (note ? 'Make sure the photo is upright, sharp and without glare, or type the details.' : 'Please type the details.'));
+}
+function fillAllNominees(text, note){
+  const people = C.parseMany(text);
+  if (!people.length) { setMsg('bulk', 'No person recognised. ' + (note ? 'Make sure each photo is upright, sharp and without glare, or paste the text.' : 'Each person needs at least a name or IC number.')); return; }
+  const existing = state.nominees.filter(n => n.name || n.idNo).length;
+  if (existing && !confirm(`Replace the ${existing} nominee(s) already entered with the ${Math.min(people.length, 4)} found?`)) return;
+  state.nominees = people.slice(0, 4).map(p => { const n = C.newNominee(); Object.keys(p.values).forEach(k=>{ if (k in n) n[k] = p.values[k]; }); return n; });
+  const noShare = state.nominees.some(n => !n.share);
+  render(); saveDraft();
+  setMsg('bulk', `Filled ${state.nominees.length} nominee(s): ` + state.nominees.map(n => n.name || n.idNo).join(', ') + '.' +
+    (people.length > 4 ? ` Found ${people.length} people; the form takes 4, so only the first 4 were used.` : '') +
+    (noShare ? ' Some shares are missing: type them or use Split equally.' : '') + (note || ' Please check each value.'));
+}
+
+// Photo reading runs inside this page (Tesseract, bundled). The engine loads on first use.
+let ocrP = null, ocrProgress = null;
+function ocrEngine(){
+  if (ocrP) return ocrP;
+  ocrP = (async ()=>{
+    if (!window.Tesseract) { const s = document.createElement('script'); s.textContent = document.getElementById('ocr-main').textContent; document.head.appendChild(s); }
+    const lang = document.getElementById('ocr-lang').textContent.trim();
+    // The worker gets the language data from this file instead of the internet.
+    const pre = 'self.__OCR_LANG=' + JSON.stringify(lang) + ';(function(){var of=self.fetch;self.fetch=function(u){if(String(u).indexOf(".traineddata")>-1){var b=atob(self.__OCR_LANG),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return Promise.resolve(new Response(a));}return of.apply(self,arguments);};})();\n';
+    const url = URL.createObjectURL(new Blob([pre, document.getElementById('ocr-worker').textContent], { type:'application/javascript' }));
+    return Tesseract.createWorker('eng', 1, { workerPath:url, workerBlobURL:false, corePath:'bundled.js', langPath:'bundled', cacheMethod:'none', gzip:true,
+      logger: m => { if (ocrProgress) ocrProgress(m); } });
+  })();
+  ocrP.catch(()=>{ ocrP = null; });
+  return ocrP;
+}
+async function photoCanvas(file){
+  let bmp;
+  try { bmp = await createImageBitmap(file); }
+  catch (e) { throw new Error(`"${file.name}" cannot be opened. Use a JPG or PNG (for an iPhone HEIC photo, send it through WhatsApp or take a screenshot).`); }
+  const long = Math.max(bmp.width, bmp.height);
+  const scale = long > 2400 ? 2400 / long : long < 1400 ? 1400 / long : 1;
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(bmp, 0, 0, c.width, c.height);
+  return c;
+}
+async function readPhotos(base, files){
+  if (!files.length) return;
+  const texts = [];
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const tag = files.length > 1 ? `photo ${i+1} of ${files.length}` : 'photo';
+      setMsg(base, `Reading ${tag}…` + (ocrP ? '' : ' (first time takes a few seconds)'));
+      ocrProgress = m => { if (m.status === 'recognizing text') setMsg(base, `Reading ${tag}… ${Math.round(m.progress * 100)}%`); };
+      const canvas = await photoCanvas(files[i]);
+      const w = await ocrEngine();
+      const { data } = await w.recognize(canvas);
+      texts.push(data.text.trim());
+    }
+  } catch (e) { ocrProgress = null; setMsg(base, 'Could not read the photo: ' + (e && e.message || e)); return; }
+  ocrProgress = null;
+  const text = texts.join('\n---\n');
+  pasteMem[base] = text;
+  if (base === 'bulk') fillAllNominees(text, PHOTO_NOTE); else fillPerson(base, text, PHOTO_NOTE);
+}
+document.addEventListener('input', e=>{ if (e.target.id === 'q') {
+  // Every word must match; dashes/spaces in IC numbers are ignored.
+  const words = e.target.value.toLowerCase().split(/\s+/).filter(Boolean).map(w => /^[\d\-]+$/.test(w) ? w.replace(/-/g,'') : w);
+  let shown = 0;
+  document.querySelectorAll('tr[data-search]').forEach(r=>{ const ok = words.every(w => r.dataset.search.includes(w)); r.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  const n = document.getElementById('qCount'); if (n) n.textContent = words.length ? `${shown} found` : '';
+} });
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-tab]');
+  if (t && !e.target.closest('[data-act]')) { tab = t.dataset.tab; render(); window.scrollTo(0,0); return; }
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  const list = b.dataset.list;
+  if (act === 'add') {
+    const arr = getPath(list);
+    arr.push(list === 'nominees' ? C.newNominee() : list === 'trustees' ? C.newTrustee() : { name:'', idNo:'' });
+    render(); saveDraft();
+  } else if (act === 'remove') {
+    getPath(list).splice(+b.dataset.i, 1); render(); saveDraft();
+  } else if (act === 'split') {
+    const n = state.nominees.length; const base = Math.floor(10000 / n) / 100;
+    state.nominees.forEach((x,i)=> x.share = String(i === 0 ? +(100 - base*(n-1)).toFixed(2) : base)); render(); saveDraft();
+  } else if (act === 'copyaddr') {
+    const to = getPath(b.dataset.base), from = getPath(b.dataset.from);
+    ['street','postcode','town','country'].forEach(k=> to[k] = from[k]); render(); saveDraft();
+  } else if (act === 'nomToTrustee') {
+    const t = state.trustees[+b.dataset.i], n = state.nominees[+b.dataset.j];
+    ['name','idNo','passportExpiry','gender','dob','nationality','nationalityOther','street','postcode','town','country'].forEach(k=> t[k] = n[k]);
+    if (n.nationality === 'malaysian' && !t.cob) t.cob = 'malaysian';
+    render(); saveDraft();
+  } else if (act === 'paste') {
+    fillPerson(b.dataset.base, pasteMem[b.dataset.base] || '', '');
+  } else if (act === 'bulkfill') {
+    fillAllNominees(pasteMem.bulk || '', '');
+  } else if (act === 'photo') {
+    document.querySelector(`input[data-photo="${b.dataset.base}"]`).click();
+  } else if (act === 'load' || act === 'dup') {
+    const c = JSON.parse(JSON.stringify(store.get(LS.cases, {})[b.dataset.id]));
+    if (act === 'dup') { c.id = C.newCase().id; delete c.savedAt; }
+    state = c; tab = 'proposer'; render(); saveDraft(); toast(act === 'dup' ? 'Copied. Edit and save as a new customer.' : 'Opened ' + (C.U(c.proposer.name) || 'customer'));
+  } else if (act === 'del') {
+    if (!confirm('Delete this saved customer from this browser?')) return;
+    const cases = store.get(LS.cases, {}); delete cases[b.dataset.id]; store.set(LS.cases, cases); render();
+  } else if (act === 'export') {
+    download(new Blob([JSON.stringify({ app:'nomination-form-filler', exported:new Date().toISOString(), cases: store.get(LS.cases, {}) }, null, 1)], {type:'application/json'}), `Nomination customers backup ${today()}.json`);
+  } else if (act === 'import') { document.getElementById('importFile').click();
+  } else if (act === 'logcsv') {
+    const log = store.get(LS.log, []); const head = ['When','Proposer','Policy','Fields filled','Must fix','Missing','To check','File'];
+    const rows = log.map(r=>[r.at, r.customer, r.policy, r.filled, r.errors, r.missing, r.warnings, r.file]);
+    const csv = [head].concat(rows).map(r=> r.map(x=> '"' + String(x).replace(/"/g,'""') + '"').join(',')).join('\r\n');
+    download(new Blob(['﻿' + csv], {type:'text/csv'}), `Nomination run log ${today()}.csv`);
+  } else if (act === 'logclear') { if (confirm('Clear the whole run log?')) { store.set(LS.log, []); render(); }
+  } else if (act === 'saveSettings') {
+    settings.agentName = C.U(document.getElementById('sName').value); settings.agentIac = document.getElementById('sIac').value.trim();
+    store.set(LS.settings, settings);
+    if (state.witness.type === 'agent') { if (!state.witness.name) state.witness.name = settings.agentName; if (!state.witness.iac) state.witness.iac = settings.agentIac; }
+    render(); saveDraft(); toast('Settings saved');
+  } else if (act === 'upload') { document.getElementById('uploadFile').click();
+  } else if (act === 'template') { downloadTemplate();
+  } else if (act === 'closeImport') { lastImport = null; render();
+  } else if (act === 'loadForm') { document.getElementById('formFile').click();
+  } else if (act === 'resetForm') { localStorage.removeItem(LS.template); render(); toast('Using the built-in form again'); }
+});
+document.addEventListener('click', e=>{ const li = e.target.closest('ul.issues li'); if (li) { tab = li.dataset.tab; render(); window.scrollTo(0,0); } });
+
+document.getElementById('btnNew').onclick = ()=>{ if (!confirm('Start a new customer? Unsaved changes to the current one will be lost (save first if needed).')) return; state = freshCase(); tab='proposer'; render(); saveDraft(); };
+document.getElementById('btnSave').onclick = ()=>{
+  if (!C.U(state.proposer.name)) { toast('Enter the proposer name before saving.'); return; }
+  state.savedAt = new Date().toISOString();
+  const cases = store.get(LS.cases, {}); cases[state.id] = JSON.parse(JSON.stringify(state));
+  if (store.set(LS.cases, cases)) { toast('Saved ' + C.U(state.proposer.name)); render(); }
+};
+document.getElementById('btnGen').onclick = generate;
+document.getElementById('btnUpload').onclick = ()=> document.getElementById('uploadFile').click();
+
+// Browsers allow about 5 MB per site; show how full it is so the user can export/back up in time.
+function storageUse(){
+  let bytes = 0; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); bytes += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch(e) {}
+  const pct = Math.round(bytes / (5 * 1024 * 1024) * 100);
+  return `${pct}% used${pct >= 80 ? ' (nearly full: export a backup)' : ''}`;
+}
+function today(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function download(blob, name){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+function b64ToBytes(b64){ const s = atob(b64); const u = new Uint8Array(s.length); for (let i=0;i<s.length;i++) u[i] = s.charCodeAt(i); return u; }
+function bytesToB64(u){ let s=''; for (let i=0;i<u.length;i+=0x8000) s += String.fromCharCode.apply(null, u.subarray(i,i+0x8000)); return btoa(s); }
+function templateBytes(){ const t = store.get(LS.template, null); return b64ToBytes(t ? t.b64 : TEMPLATE_B64); }
+
+async function generate(){
+  const iss = C.validate(state);
+  const errs = iss.filter(i=>i.level==='error'), miss = iss.filter(i=>i.level==='missing'), warns = iss.filter(i=>i.level==='warn');
+  if (errs.length || miss.length) {
+    if (!confirm(`There are ${errs.length} item(s) to fix and ${miss.length} missing. Generate a DRAFT anyway? Missing items will be left blank.`)) return;
+  }
+  try {
+    const { bytes, report } = await C.fillForm(PDFLib, templateBytes(), state);
+    const ref = C.normId(state.policy.policyNo || state.policy.proposalNo) || 'no-policy-no';
+    const draft = (errs.length || miss.length) ? 'DRAFT - ' : '';
+    const file = `${draft}GE Nomination - ${C.U(state.proposer.name) || 'NO NAME'} - ${ref} - ${today()}.pdf`.replace(/[\\/:*?"<>|]/g,'-');
+    download(new Blob([bytes], {type:'application/pdf'}), file);
+    const log = store.get(LS.log, []);
+    log.push({ at:new Date().toISOString(), customer:C.U(state.proposer.name), policy:ref, filled:report.filled, errors:errs.length + report.problems.length, missing:miss.length, warnings:warns.length, file });
+    store.set(LS.log, log.slice(-500));
+    if (report.problems.length) alert('Generated, but some boxes were left blank:\n\n• ' + report.problems.join('\n• '));
+    else toast(`PDF created: ${report.filled} boxes filled. Open it from your Downloads to check.`);
+    if (tab === 'log') render();
+  } catch (err) {
+    alert('Could not create the PDF: ' + err.message);
+    const log = store.get(LS.log, []); log.push({ at:new Date().toISOString(), customer:C.U(state.proposer.name), policy:'', filled:0, errors:1, missing:0, warnings:0, file:'FAILED: ' + err.message }); store.set(LS.log, log);
+  }
+}
+
+async function importBackup(file){
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || data.app !== 'nomination-form-filler' || typeof data.cases !== 'object') throw new Error('This is not a backup file from this app.');
+    const cases = store.get(LS.cases, {}); let n = 0;
+    Object.values(data.cases).forEach(c=>{ if (c && c.id && c.proposer && Array.isArray(c.nominees)) { cases[c.id] = c; n++; } });
+    store.set(LS.cases, cases); render(); toast(`Imported ${n} customer(s)`);
+  } catch (e) { alert('Import failed: ' + e.message); }
+}
+// ---------- Excel / CSV upload ----------
+let lastImport = null;
+async function uploadCustomers(file){
+  if (!file) return;
+  try {
+    const wb = XLSX.read(new Uint8Array(await file.arrayBuffer()), { type:'array', raw:true });
+    const sheetName = wb.SheetNames.find(n => /customer/i.test(n)) || wb.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header:1, raw:true, defval:'' });
+    const res = C.importRows(rows);
+    const cases = store.get(LS.cases, {});
+    const existing = Object.values(cases);
+    res.cases.forEach(c => {
+      c.savedAt = new Date().toISOString();
+      const ref = c.policy.policyNo || c.policy.proposalNo;
+      c.duplicate = !!(ref && existing.some(x => (x.policy.policyNo || x.policy.proposalNo) === ref));
+      c.witness.name = settings.agentName; c.witness.iac = settings.agentIac;
+      cases[c.id] = c;
+    });
+    if (res.cases.length && !store.set(LS.cases, cases)) return;
+    lastImport = { file:file.name, sheet:sheetName, at:new Date().toISOString(), ids:res.cases.map(c=>c.id), problems:res.problems, ignored:res.ignored };
+    const log = store.get(LS.log, []);
+    log.push({ at:lastImport.at, customer:`UPLOAD: ${res.cases.length} customer(s)`, policy:'', filled:0, errors:res.problems.length, missing:0, warnings:0, file:file.name });
+    store.set(LS.log, log.slice(-500));
+    tab = 'saved'; render(); window.scrollTo(0,0);
+    toast(res.cases.length ? `Uploaded ${res.cases.length} customer(s)` : 'No customers found in the file');
+  } catch (e) { alert('Could not read this file: ' + e.message + '\n\nPlease save it as .xlsx or .csv and use the template columns.'); }
+  finally { document.getElementById('uploadFile').value = ''; }
+}
+function importReport(){
+  if (!lastImport) return '';
+  const cases = store.get(LS.cases, {});
+  const list = lastImport.ids.map(id => cases[id]).filter(Boolean);
+  return `<div class="card"><div class="row"><h2 style="flex:1">Upload result: ${esc(lastImport.file)}</h2><button class="small" data-act="closeImport">Close</button></div>
+    <p class="hint">${list.length} customer(s) saved from sheet "${esc(lastImport.sheet)}". Open each one, clear its checklist, then Generate PDF.</p>
+    ${list.length ? `<table><thead><tr><th>Proposer</th><th>Policy / proposal</th><th>Nominees</th><th>Trustees</th><th>Checklist</th><th></th></tr></thead><tbody>
+      ${list.map(c => { const iss = C.validate(c); const e = iss.filter(i=>i.level==='error').length, m = iss.filter(i=>i.level==='missing').length;
+        return `<tr><td>${esc(c.proposer.name || '(no proposer)')}${c.duplicate ? '<br><span class="hint">Already saved before; kept both copies</span>' : ''}</td>
+          <td>${esc(c.policy.policyNo || c.policy.proposalNo)}</td><td>${c.nominees.filter(n=>n.name).length}</td><td>${c.trustees.length}</td>
+          <td style="color:${e?'var(--err)':m?'var(--warn)':'var(--ok)'}">${e||m ? `${e} must fix, ${m} missing` : 'Ready'}</td>
+          <td><button class="small primary" data-act="load" data-id="${c.id}">Open</button></td></tr>`; }).join('')}</tbody></table>` : ''}
+    ${lastImport.problems.length ? `<h3>Rows to check in your file</h3><ul class="issues">${lastImport.problems.map(p=>`<li class="warn"><span class="tag">Row ${p.row}</span>${esc(p.text)}</li>`).join('')}</ul>` : ''}
+    ${lastImport.ignored.length ? `<p class="hint">Columns not used: ${lastImport.ignored.map(esc).join(', ')}</p>` : ''}
+  </div>`;
+}
+function downloadTemplate(){
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(C.templateRows());
+  // Keep IC, postcode and phone columns as text so Excel does not drop leading zeros.
+  const textCols = ['IC / Passport No','Postcode','Tel No','Policy No','Proposal No'].map(h => C.TEMPLATE_HEADERS.indexOf(h));
+  for (let r = 1; r <= 200; r++) textCols.forEach(ci => { const ref = XLSX.utils.encode_cell({ r, c:ci }); if (!ws[ref]) ws[ref] = { t:'s', v:'' }; ws[ref].t = 's'; ws[ref].v = String(ws[ref].v); ws[ref].z = '@'; });
+  ws['!ref'] = XLSX.utils.encode_range({ s:{ r:0, c:0 }, e:{ r:200, c:C.TEMPLATE_HEADERS.length - 1 } });
+  ws['!cols'] = C.TEMPLATE_HEADERS.map(h => ({ wch: h === 'Address' ? 45 : Math.max(12, h.length + 2) }));
+  ws['!freeze'] = { xSplit:0, ySplit:1 };
+  XLSX.utils.book_append_sheet(wb, ws, 'Customers');
+  const g = XLSX.utils.aoa_to_sheet(C.TEMPLATE_GUIDE); g['!cols'] = [{ wch:34 }, { wch:60 }, { wch:70 }];
+  XLSX.utils.book_append_sheet(wb, g, 'How to fill');
+  XLSX.writeFile(wb, 'Nomination customer upload template.xlsx');
+}
+
+async function loadForm(file){
+  if (!file) return;
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const missing = await C.checkTemplate(PDFLib, bytes);
+    if (missing.length) { alert('This PDF is missing boxes the app needs, so it was NOT loaded:\n\n' + missing.join(', ') + '\n\nSend the new form to whoever maintains this app to update the mapping.'); return; }
+    if (store.set(LS.template, { name: file.name, b64: bytesToB64(bytes) })) { render(); toast('New form loaded and checked'); }
+  } catch (e) { alert('Could not read this PDF: ' + e.message); }
+}
+
+render();
+})();
+</script>
+</body>
+</html>

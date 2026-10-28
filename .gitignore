@@ -1,0 +1,8 @@
+node_modules/
+.claude/
+*.log
+# Never commit real customer exports
+Nomination customers backup*.json
+Nomination run log*.csv
+GE Nomination - *.pdf
+DRAFT - *.pdf
